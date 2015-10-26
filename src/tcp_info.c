@@ -98,14 +98,35 @@ save_tcpinfo(struct iperf_stream *sp, struct iperf_interval_results *irp)
 #if (defined(linux) || defined(__FreeBSD__) || defined(__NetBSD__)) && \
 	defined(TCP_INFO)
     socklen_t tcp_info_length = sizeof(struct tcp_info);
+    struct tcp_info *ti = &irp->tcpInfo;
 
-    if (getsockopt(sp->socket, IPPROTO_TCP, TCP_INFO, (void *)&irp->tcpInfo, &tcp_info_length) < 0)
+    if (getsockopt(sp->socket, IPPROTO_TCP, TCP_INFO, ti, &tcp_info_length) < 0)
 	iperf_err(sp->test, "getsockopt - %s", strerror(errno));
 
     if (sp->test->debug) {
-	printf("tcpi_snd_cwnd %u tcpi_snd_mss %u tcpi_rtt %u\n",
-	       irp->tcpInfo.tcpi_snd_cwnd, irp->tcpInfo.tcpi_snd_mss,
-	       irp->tcpInfo.tcpi_rtt);
+	printf("unacked %u"
+	       " sacked %u"
+	       " lost %u"
+	       " retrans %u"
+	       " fackets %u"
+	       " rcv_ssthresh %u"
+	       " rtt %u"
+	       " snd_ssthresh %u"
+	       " snd_cwnd %u"
+	       " reordering %u"
+	       " total_retrans %u"
+	       "\n",
+	       ti->tcpi_unacked,
+	       ti->tcpi_sacked,
+	       ti->tcpi_lost,
+	       ti->tcpi_retrans,
+	       ti->tcpi_fackets,
+	       ti->tcpi_rcv_ssthresh,
+	       ti->tcpi_rtt,
+	       ti->tcpi_snd_ssthresh,
+	       ti->tcpi_snd_cwnd,
+	       ti->tcpi_reordering,
+	       ti->tcpi_total_retrans);
     }
 
 #endif
